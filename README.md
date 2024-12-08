@@ -42,7 +42,7 @@ To use the Message Maven Plugin, add it to your project's `pom.xml` in the `<bui
                     <source>
                         <!-- Path to *.properties File -->
                         <path>${project.basedir}/src/main/resources/message.properties</path>
-                        <targetPackage>eio.github.yottabytecrafter.config</targetPackage>
+                        <targetPackage>io.github.yottabytecrafter.config</targetPackage>
                     </source>
                     <source>
                         <!-- Path to directory with *.properties Files -->
@@ -79,7 +79,7 @@ The plugin allows you to customize the naming of generated Java classes by imple
 
 **Default Strategy:**
 
-The default strategy (`factory.io.github.yottabytecrafter.DefaultClassNameStrategy`) creates class names based on the property file name, capitalizing the first letter and removing the `.properties` extension. The specific steps are as follows:
+The default strategy (`io.github.yottabytecrafter.strategy.DefaultClassNameStrategy`) creates class names based on the property file name, capitalizing the first letter and removing the `.properties` extension. The specific steps are as follows:
 
 1. Remove the `.properties` extension from the file name.
 2. Convert to camel case.
@@ -90,7 +90,7 @@ The default strategy (`factory.io.github.yottabytecrafter.DefaultClassNameStrate
 You can create your own strategy by implementing the `ClassNameStrategy` interface. Here's an example:
 
 ```java
-package org.atotheb.strategy.impl;
+package io.github.yottabytecrafter.strategy;
 
 import strategy.io.github.yottabytecrafter.ClassNameStrategy;
 
@@ -135,7 +135,7 @@ farewell=Goodbye
 The plugin will generate a Java class `io.github.yottabytecrafter.config.MessageConstants` (if `io.github.yottabytecrafter.config` is the `targetPackage`):
 
 ```java
-package org.atotheb.config;
+package io.github.yottabytecrafter.config;
 
 public final class MessageConstants {
     public static final String GREETING = "Hello, World!";
