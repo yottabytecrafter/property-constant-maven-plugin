@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://your-namespace/maven-plugin"
+           xmlns="http://your-namespace/maven-plugin"
+           elementFormDefault="qualified">
+
+    <xs:element name="configuration">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sources" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="source" type="sourceType" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="targetPackage" type="xs:string" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Das Standard-Zielpaket für generierte Klassen.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="outputDirectory" type="xs:string" minOccurs="0" default="${project.build.directory}/generated-sources/java">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Das Ausgabeverzeichnis für generierte Quellen.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="classNameStrategyClass" type="xs:string" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Der vollständige Klassenname der zu verwendenden ClassNameStrategy.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="sourceType">
+        <xs:sequence>
+            <xs:element name="path" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Der Pfad zum Verzeichnis oder zur Datei mit den Properties.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="targetPackage" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Das Zielpaket für die generierten Klassen aus dieser Quelle. Überschreibt das globale targetPackage.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
