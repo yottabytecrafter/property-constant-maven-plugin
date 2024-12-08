@@ -26,9 +26,9 @@ To use the Message Maven Plugin, add it to your project's `pom.xml` in the `<bui
 <build>
     <plugins>
         <plugin>
-            <groupId>org.atotheb</groupId>
-            <artifactId>message-maven-plugin</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>io.github.yottabytecrafter</groupId>
+            <artifactId>property-constant-maven-plugin</artifactId>
+            <version>0.1-SNAPSHOT</version>
             <executions>
                 <execution>
                     <goals>
@@ -42,12 +42,12 @@ To use the Message Maven Plugin, add it to your project's `pom.xml` in the `<bui
                     <source>
                         <!-- Path to *.properties File -->
                         <path>${project.basedir}/src/main/resources/message.properties</path>
-                        <targetPackage>org.atotheb.config</targetPackage>
+                        <targetPackage>eio.github.yottabytecrafter.config</targetPackage>
                     </source>
                     <source>
                         <!-- Path to directory with *.properties Files -->
                         <path>${project.basedir}/src/main/resources</path>
-                        <targetPackage>org.atotheb.config</targetPackage>
+                        <targetPackage>io.github.yottabytecrafter.config</targetPackage>
                     </source>
                 </sources>
                 <!-- Optional output directory -->
@@ -83,8 +83,7 @@ The default strategy (`factory.io.github.yottabytecrafter.DefaultClassNameStrate
 
 1. Remove the `.properties` extension from the file name.
 2. Convert to camel case.
-3. If the file name starts with a digit, prefix the generated class name with an underscore.
-4. Return `"[ClassName]Constants"`
+3. Return `"[ClassName]Properties"`
 
 **Custom Strategy Example:**
 
@@ -119,7 +118,7 @@ To use this custom strategy, specify its fully qualified class name in the plugi
 
 ```xml
 <configuration>
-    <classNameStrategyClass>org.atotheb.strategy.impl.CustomClassNameStrategy</classNameStrategyClass>
+    <classNameStrategyClass>io.github.yottabytecrafter.strategy.CustomClassNameStrategy</classNameStrategyClass>
     <!-- ... other configurations ... -->
 </configuration>
 ```
@@ -133,7 +132,7 @@ greeting=Hello, World!
 farewell=Goodbye
 ```
 
-The plugin will generate a Java class `org.atotheb.config.MessageConstants` (if `org.atotheb.config` is the `targetPackage`):
+The plugin will generate a Java class `io.github.yottabytecrafter.config.MessageConstants` (if `io.github.yottabytecrafter.config` is the `targetPackage`):
 
 ```java
 package org.atotheb.config;
