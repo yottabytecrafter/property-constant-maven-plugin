@@ -63,14 +63,14 @@ To use the Message Maven Plugin, add it to your project's `pom.xml` in the `<bui
 
 ### Configuration Options
 
-| Parameter                | Description                                                                                                       | Default Value                                      |
-| :----------------------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------- |
-| `sources`                | A list of source configurations, each defining a path and optionally a target package.                           |                                                    |
-| `source`                 | Specifies the path to the directory or property file.                                                             |                                                    |
-| `path`                   | The path to the directory or property file.                                                                      |                                                    |
-| `targetPackage`          | The default target package for generated classes if not specified in `source`.                                   |                                                    |
-| `outputDirectory`        | The output directory for the generated Java classes.                                                              | `${project.build.directory}/generated-sources/java` |
-| `classNameStrategyClass` | The fully qualified class name of the `ClassNameStrategy` implementation to use for generating class names.     | `factory.io.github.yottabytecrafter.DefaultClassNameStrategy`       |
+| Parameter                | Description                                                                                                       | Default Value                                                  |
+| :----------------------- | :---------------------------------------------------------------------------------------------------------------- |:---------------------------------------------------------------|
+| `sources`                | A list of source configurations, each defining a path and optionally a target package.                           |                                                                |
+| `source`                 | Specifies the path to the directory or property file.                                                             |                                                                |
+| `path`                   | The path to the directory or property file.                                                                      |                                                                |
+| `targetPackage`          | The default target package for generated classes if not specified in `source`.                                   |                                                                |
+| `outputDirectory`        | The output directory for the generated Java classes.                                                              | `${project.build.directory}/generated-sources/java`            |
+| `classNameStrategyClass` | The fully qualified class name of the `ClassNameStrategy` implementation to use for generating class names.     | `io.github.yottabytecrafter.strategy.DefaultClassNameStrategy` |
 
 ## Class Naming Strategy
 
