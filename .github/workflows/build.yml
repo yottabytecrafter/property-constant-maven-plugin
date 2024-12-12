@@ -1,9 +1,14 @@
 name: Java Maven Build & Test
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build_and_test:
+
     runs-on: ubuntu-latest
 
     steps:
