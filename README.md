@@ -5,7 +5,7 @@
 
 ## Description
 
-The Message Maven Plugin is a tool designed to enhance Java development by automatically generating Java constant classes from property files. It simplifies the management of properties by creating corresponding Java classes containing static string constants for each key in the property files. This reduces the risk of runtime errors due to typos in property keys and improves code maintainability.
+The Property Constant Maven Plugin is a tool designed to enhance Java development by automatically generating Java constant classes from property files. It simplifies the management of properties by creating corresponding Java classes containing static string constants for each key in the property files. This reduces the risk of runtime errors due to typos in property keys and improves code maintainability.
 
 The plugin scans specified directories for `.properties` files during the build process and generates corresponding Java classes. Each property key is converted into a well-defined constant within the generated class, ensuring type safety and compile-time error checking. It also supports custom naming strategies for generated class names through the `ClassNameStrategy` interface.
 
@@ -19,7 +19,7 @@ The plugin scans specified directories for `.properties` files during the build 
 
 ## Usage
 
-To use the Message Maven Plugin, add it to your project's `pom.xml` in the `<build>` section:
+To use the Property Constant Maven Plugin, add it to your project's `pom.xml` in the `<build>` section:
 
 ```xml
 
@@ -98,8 +98,7 @@ import java.io.File;
 public class CustomClassNameStrategy implements ClassNameStrategy {
 
     @Override
-    public String getClassName(File propertyFile) {
-        String fileName = propertyFile.getName();
+    public String getClassName(String fileName) {
         String baseName = fileName.substring(0, fileName.lastIndexOf('.')); // Remove .properties extension
 
         // Add a "Config" suffix to the class name
@@ -131,16 +130,16 @@ greeting=Hello, World!
 farewell=Goodbye
 ```
 
-The plugin will generate a Java class `io.github.yottabytecrafter.config.MessageConstants` (if `io.github.yottabytecrafter.config` is the `targetPackage`):
+The plugin will generate a Java class `io.github.yottabytecrafter.config.MessageProperties` (if `io.github.yottabytecrafter.config` is the `targetPackage`):
 
 ```java
 package io.github.yottabytecrafter.config;
 
-public final class MessageConstants {
+public final class MessageProperties {
     public static final String GREETING = "Hello, World!";
     public static final String FAREWELL = "Goodbye";
 
-    private MessageConstants() {
+    private MessageProperties() {
         throw new IllegalStateException("Utility class");
     }
 }
