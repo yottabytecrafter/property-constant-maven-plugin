@@ -2,6 +2,10 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.yottabytecrafter/property-constant-maven-plugin.svg)](https://search.maven.org/artifact/io.github.yottabytecrafter/property-constant-maven-plugin)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=yottabytecrafter_property-constant-maven-plugin&metric=coverage)](https://sonarcloud.io/summary/new_code?id=yottabytecrafter_property-constant-maven-plugin)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=yottabytecrafter_property-constant-maven-plugin&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=yottabytecrafter_property-constant-maven-plugin)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=yottabytecrafter_property-constant-maven-plugin&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=yottabytecrafter_property-constant-maven-plugin)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=yottabytecrafter_property-constant-maven-plugin&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=yottabytecrafter_property-constant-maven-plugin)
 
 ## Description
 
