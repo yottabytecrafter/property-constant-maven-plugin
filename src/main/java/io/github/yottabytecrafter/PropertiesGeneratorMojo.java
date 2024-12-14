@@ -75,8 +75,6 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
     private void processSource(Source source, ClassNameStrategy strategy) throws IOException {
         File sourcePath = new File(source.getPath());
 
-        var test = "Test new code covarage";
-
         if (!sourcePath.exists()) {
             getLog().warn("Source path does not exist: " + sourcePath);
             return;
