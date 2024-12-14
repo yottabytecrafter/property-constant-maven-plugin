@@ -75,9 +75,6 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
-      - name: Generate Test coverage report
-        run: mvn sonar:sonar -Pcoverage
-
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
