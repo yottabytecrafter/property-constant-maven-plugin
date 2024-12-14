@@ -66,6 +66,15 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Build project
+        run: mvn -B clean verify
+
+      - name: Set up JDK 17 for SonarQube
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
       - name: Generate Test coverage report
         run: mvn sonar:sonar -Pcoverage
 
@@ -73,7 +82,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+        run: mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pcoverage \
           -Dsonar.projectKey=yottabytecrafter_property-constant-maven-plugin \
           -Dsonar.branch.name=${{ github.ref_name }} \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
