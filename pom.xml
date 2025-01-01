@@ -16,6 +16,26 @@
     it easier to reference property values in your code while maintaining type safety and enabling IDE auto-completion.
   </description>
 
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>yottabytecrafter</id>
+      <name>yottabytecrafter</name>
+      <email>yottabytecrafter@gmail.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <url>https://github.com/yottabytecrafter/property-constant-maven-plugin</url>
+    <connection>scm:git:git://github.com/yottabytecrafter/property-constant-maven-plugin.git</connection>
+    <developerConnection>scm:git:ssh://github.com:yottabytecrafter/property-constant-maven-plugin.git</developerConnection>
+  </scm>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
@@ -73,6 +93,21 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.2.3</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
 
       <!-- Integration Tests -->
       <plugin>
@@ -139,4 +174,17 @@
       </build>
     </profile>
   </profiles>
+
+  <distributionManagement>
+    <repository>
+      <id>ossrh</id>
+      <name>OSSRH Repository</name>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <name>OSSRH Snapshots</name>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
