@@ -111,7 +111,7 @@ class ClassBuilderTest {
                     .makeClassFinal()
                     .addConstant("new.line.key", "NEW_LINE", "line1\nline2")
                     .addConstant("quotes.key", "QUOTES", StringEscapeUtils.escapeJavaString("\"quoted text\""))
-                    .addConstant("unicode.key", "UNICODE", "Hello • World")
+                    .addConstant("unicode.key", "UNICODE", StringEscapeUtils.escapeJavaString("Hello • World"))
                     .build();
 
             // Then
@@ -128,7 +128,7 @@ class ClassBuilderTest {
             // Assertions for the actual constants
             assertTrue(result.contains("public static final String NEW_LINE = \"line1\\nline2\";"));
             assertTrue(result.contains("public static final String QUOTES = \"\\\"quoted text\\\"\";"));
-            assertTrue(result.contains("public static final String UNICODE = \"Hello • World\";"));
+            assertTrue(result.contains("public static final String UNICODE = \"Hello \\u2022 World\";"));
         }
 
         @Test
