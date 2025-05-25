@@ -20,11 +20,23 @@ assert messageContentMatcher.find(), "Date not found in messageContent"
 def dateString = messageContentMatcher[0][1]
 assert dateString =~ datePattern, "Date does not match expected format: ${dateString}"
 
-assert messageContent.contains("comments = \"Generated from message.properties")
+assert messageContent.contains("comments = \"Generated from message_*.properties") // Updated comment
 assert messageContent.contains("public final class MessageProperties")
-assert messageContent.contains("APP_TITLE = \"My Test Application\"")
-assert messageContent.contains("APP_WELCOME = \"Welcome to {0}!\"")
-assert messageContent.contains("APP_VERSION = \"1.0.0\"")
+
+// Verify APP_TITLE
+assert messageContent.contains("public static final java.util.Map<String, String> APP_TITLE;")
+assert messageContent.contains("APP_TITLE = new java.util.HashMap<>();")
+assert messageContent.contains("APP_TITLE.put(\"en\", \"My Test Application\");")
+
+// Verify APP_WELCOME
+assert messageContent.contains("public static final java.util.Map<String, String> APP_WELCOME;")
+assert messageContent.contains("APP_WELCOME = new java.util.HashMap<>();")
+assert messageContent.contains("APP_WELCOME.put(\"en\", \"Welcome to {0}!\");")
+
+// Verify APP_VERSION
+assert messageContent.contains("public static final java.util.Map<String, String> APP_VERSION;")
+assert messageContent.contains("APP_VERSION = new java.util.HashMap<>();")
+assert messageContent.contains("APP_VERSION.put(\"en\", \"1.0.0\");")
 
 // config.properties && ConfigProperties.java
 
@@ -41,8 +53,20 @@ assert configContentMatcher.find(), "Date not found in messageContent"
 def configDateString = configContentMatcher[0][1]
 assert configDateString =~ datePattern, "Date does not match expected format: ${configDateString}"
 
-assert configContent.contains("comments = \"Generated from config.properties")
+assert configContent.contains("comments = \"Generated from config_*.properties") // Updated comment
 assert configContent.contains("public final class ConfigProperties")
-assert configContent.contains("DB_URL = \"jdbc:mysql://localhost:3306/mydb\"")
-assert configContent.contains("DB_USER = \"admin\"")
-assert configContent.contains("DB_PASSWORD = \"secret\"")
+
+// Verify DB_URL
+assert configContent.contains("public static final java.util.Map<String, String> DB_URL;")
+assert configContent.contains("DB_URL = new java.util.HashMap<>();")
+assert configContent.contains("DB_URL.put(\"en\", \"jdbc:mysql://localhost:3306/mydb\");")
+
+// Verify DB_USER
+assert configContent.contains("public static final java.util.Map<String, String> DB_USER;")
+assert configContent.contains("DB_USER = new java.util.HashMap<>();")
+assert configContent.contains("DB_USER.put(\"en\", \"admin\");")
+
+// Verify DB_PASSWORD
+assert configContent.contains("public static final java.util.Map<String, String> DB_PASSWORD;")
+assert configContent.contains("DB_PASSWORD = new java.util.HashMap<>();")
+assert configContent.contains("DB_PASSWORD.put(\"en\", \"secret\");")
