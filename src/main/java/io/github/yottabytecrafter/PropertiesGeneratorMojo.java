@@ -143,7 +143,7 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
                 return; // Or log a warning if directory is unreadable
             }
 
-            Pattern pattern = Pattern.compile("(.*)_([a-z]{2}(?:_[A-Z]{2})?)\\.properties");
+            Pattern pattern = Pattern.compile("(.*)_(.+)\\.properties");
 
             for (File file : allFiles) {
                 if (file.isFile()) {

@@ -13,7 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue; // Adding as good pra
 import static org.junit.jupiter.api.Assertions.assertFalse; // Adding as good practice
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.maven.plugin.descriptor.PluginDescriptor; // Added for mocking
 import io.github.yottabytecrafter.source.Source; // Added for mocking
@@ -26,6 +28,7 @@ import java.nio.file.Path; // Added for file operations
 import java.text.MessageFormat; // Added for log message verification
 import java.util.ArrayList;
 import java.util.Collections; // Added for Collections.singletonList
+import java.util.List; // Added for ArgumentCaptor
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -42,6 +45,12 @@ public class PropertiesGeneratorMojoTest {
     void setUp() {
         mojo = new PropertiesGeneratorMojo();
         mockLog = mock(Log.class);
+        // Add doAnswer for verbose logging of mockLog.warn(String)
+        doAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            System.out.println("mockLog.warn called with: " + args[0]);
+            return null; // Necessary for void methods
+        }).when(mockLog).warn(anyString());
         mojo.setLog(mockLog); // AbstractMojo provides setLog
 
         // Store original locale
@@ -248,10 +257,12 @@ public class PropertiesGeneratorMojoTest {
         mojo.setPluginDescriptor(mock(PluginDescriptor.class));
         mojo.setOutputDirectory(tempDir.resolve("output").toFile()); // Set output dir to avoid NPE
 
+        ArgumentCaptor<String> warningCaptor = ArgumentCaptor.forClass(String.class);
         ResourceBundle messages = ResourceBundle.getBundle("io.github.yottabytecrafter.messages", Locale.ENGLISH);
         String expectedInvalidMsgFormat = messages.getString("mojo.invalidLanguageFile");
         String expectedInvalidMsg1 = MessageFormat.format(expectedInvalidMsgFormat, "messages_badlang.properties");
         String expectedInvalidMsg2 = MessageFormat.format(expectedInvalidMsgFormat, "messages_a.properties");
+        String expectedNoPropsMsg = "No properties found for basename: messages"; // New expected message
 
         Files.createFile(sourceDir.resolve("messages_badlang.properties")); // Invalid lang
         Files.createFile(sourceDir.resolve("messages_a.properties"));      // Invalid lang (too short)
@@ -264,13 +275,18 @@ public class PropertiesGeneratorMojoTest {
 
         mojo.execute();
         
-        verify(mockLog).warn(expectedInvalidMsg1);
-        verify(mockLog).warn(expectedInvalidMsg2);
+        verify(mockLog, times(3)).warn(warningCaptor.capture()); // Changed to times(3)
+        List<String> capturedWarnings = warningCaptor.getAllValues();
+        // System.out.println("Captured warnings: " + capturedWarnings);
+
+        assertTrue(capturedWarnings.contains(expectedInvalidMsg1), "Expected warning for 'messages_badlang.properties' not found in captured warnings. Captured: " + capturedWarnings);
+        assertTrue(capturedWarnings.contains(expectedInvalidMsg2), "Expected warning for 'messages_a.properties' not found in captured warnings. Captured: " + capturedWarnings);
+        assertTrue(capturedWarnings.contains(expectedNoPropsMsg), "Expected 'No properties found for basename: messages' warning not found in captured warnings. Captured: " + capturedWarnings); // New assertion
         
         // Check that the valid file was attempted for loading
         verify(mockLog).info(MessageFormat.format("Loading properties for language {0} from file {1}", "en", "messages_en.properties"));
-        // Since messages_en.properties is empty, it will log "No properties found for basename"
-        verify(mockLog).warn("No properties found for basename: messages");
+        // The following line should be removed or commented out:
+        // verify(mockLog).warn("No properties found for basename: messages"); 
 
     }
 
