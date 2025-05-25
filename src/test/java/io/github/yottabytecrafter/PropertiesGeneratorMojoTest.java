@@ -5,6 +5,12 @@ import org.apache.maven.plugin.logging.Log;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue; // Adding as good practice
+import static org.junit.jupiter.api.Assertions.assertFalse; // Adding as good practice
 import static org.mockito.Mockito.*;
 
 import org.apache.maven.plugin.descriptor.PluginDescriptor; // Added for mocking

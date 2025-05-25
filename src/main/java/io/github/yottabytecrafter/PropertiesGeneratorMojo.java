@@ -74,6 +74,22 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
         this.sources = sources;
     }
 
+    public void setPluginDescriptor(PluginDescriptor pluginDescriptor) {
+        this.pluginDescriptor = pluginDescriptor;
+    }
+
+    public void setOutputDirectory(File outputDirectory) {
+        this.outputDirectory = outputDirectory;
+    }
+
+    public void setClassNameStrategyClass(String classNameStrategyClass) {
+        this.classNameStrategyClass = classNameStrategyClass;
+    }
+
+    public void setPropertiesEncoding(String propertiesEncoding) {
+        this.propertiesEncoding = propertiesEncoding;
+    }
+
     public void execute() throws MojoExecutionException {
         try {
             messages = ResourceBundle.getBundle("io.github.yottabytecrafter.messages", Locale.getDefault());
