@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertTrue; // Adding as good practice
 import static org.junit.jupiter.api.Assertions.assertFalse; // Adding as good practice
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import org.apache.maven.plugin.descriptor.PluginDescriptor; // Added for mocking
 import io.github.yottabytecrafter.source.Source; // Added for mocking
@@ -25,6 +27,7 @@ import java.text.MessageFormat; // Added for log message verification
 import java.util.ArrayList;
 import java.util.Collections; // Added for Collections.singletonList
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 
 // PropertiesGeneratorMojo is in this package
@@ -245,6 +248,11 @@ public class PropertiesGeneratorMojoTest {
         mojo.setPluginDescriptor(mock(PluginDescriptor.class));
         mojo.setOutputDirectory(tempDir.resolve("output").toFile()); // Set output dir to avoid NPE
 
+        ResourceBundle messages = ResourceBundle.getBundle("io.github.yottabytecrafter.messages", Locale.ENGLISH);
+        String expectedInvalidMsgFormat = messages.getString("mojo.invalidLanguageFile");
+        String expectedInvalidMsg1 = MessageFormat.format(expectedInvalidMsgFormat, "messages_badlang.properties");
+        String expectedInvalidMsg2 = MessageFormat.format(expectedInvalidMsgFormat, "messages_a.properties");
+
         Files.createFile(sourceDir.resolve("messages_badlang.properties")); // Invalid lang
         Files.createFile(sourceDir.resolve("messages_a.properties"));      // Invalid lang (too short)
         Files.createFile(sourceDir.resolve("messages_en.properties")).toFile().setLastModified(0); // Valid, to ensure processing continues for the group if it exists
@@ -256,9 +264,7 @@ public class PropertiesGeneratorMojoTest {
 
         mojo.execute();
         
-        String expectedInvalidMsg1 = MessageFormat.format("Invalid language file name format: {0}. Expected format: basename_language.properties", "messages_badlang.properties");
         verify(mockLog).warn(expectedInvalidMsg1);
-        String expectedInvalidMsg2 = MessageFormat.format("Invalid language file name format: {0}. Expected format: basename_language.properties", "messages_a.properties");
         verify(mockLog).warn(expectedInvalidMsg2);
         
         // Check that the valid file was attempted for loading
@@ -364,7 +370,7 @@ public class PropertiesGeneratorMojoTest {
 
         mojo.execute();
 
-        verify(mockLog).warn(MessageFormat.format("Unsupported or illegal encoding specified: {0}. Using UTF-8 as fallback.", "INVALID-ENCODING"));
+        verify(mockLog).warn(eq(MessageFormat.format("Unsupported or illegal encoding specified: {0}. Using UTF-8 as fallback.", "INVALID-ENCODING")), any(java.nio.charset.UnsupportedCharsetException.class));
         // Check if generation still proceeded (implying fallback to UTF-8)
         verify(mockLog).info(MessageFormat.format("Loading properties for language {0} from file {1}", "en", "encode_en.properties"));
         verify(mockLog).info(MessageFormat.format("Generated constants class for base name: {0} in package: {1}", 

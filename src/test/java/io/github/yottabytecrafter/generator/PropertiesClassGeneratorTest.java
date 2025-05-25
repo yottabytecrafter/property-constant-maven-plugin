@@ -377,8 +377,9 @@ public class PropertiesClassGeneratorTest {
         assertCodeContains(code, "package com.example;");
         assertCodeContains(code, "public final class NoSourceInfo {");
         // It will have @Generated, but without the "comments" part that mentions the source file
-        assertCodeContains(code, "@Generated(");
-        assertCodeContains(code, "value = \"io.github.yottabytecrafter.PropertiesGeneratorMojo\""); // This is hardcoded in ClassBuilder
-        assertCodeDoesNotContain(code, "comments = \"Generated from"); // The comment with source file name should be absent
+        assertCodeContains(code, "@Generated("); // Should now pass
+        assertCodeContains(code, "value = \"io.github.yottabytecrafter.PropertiesGeneratorMojo\""); // Should pass
+        assertCodeContains(code, "date = "); // Should pass, check for presence
+        assertCodeDoesNotContain(code, "comments = \"Generated from"); // Should still pass
     }
 }
