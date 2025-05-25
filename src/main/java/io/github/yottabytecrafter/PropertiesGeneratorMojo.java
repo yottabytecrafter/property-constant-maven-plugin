@@ -118,7 +118,7 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
         }
     }
 
-    private void processSource(Source source, ClassNameStrategy strategy) throws IOException, MojoExecutionException {
+    private void processSource(Source source, ClassNameStrategy strategy) throws IOException {
         File sourcePath = new File(source.getPath());
 
         if (!sourcePath.exists()) {
@@ -135,7 +135,6 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
             getLog().warn(MessageFormat.format(messages.getString("mojo.sourcePathIsFile"), sourcePath.getAbsolutePath()));
             // Optionally, could attempt to process it if it matches the new naming convention,
             // but the primary design is for directories. For now, just warn and return.
-            return;
         } else if (sourcePath.isDirectory()) {
             Map<String, List<File>> filesByBaseName = new HashMap<>();
             File[] allFiles = sourcePath.listFiles();
@@ -143,7 +142,7 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
                 return; // Or log a warning if directory is unreadable
             }
 
-            Pattern pattern = Pattern.compile("(.*)_(.+)\\.properties");
+            Pattern pattern = Pattern.compile("(.*)_(.+)\\.properties"); // NOSONAR No risk for denial of service
 
             for (File file : allFiles) {
                 if (file.isFile()) {
@@ -166,7 +165,7 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
     }
 
     private void processPropertyGroup(String baseName, List<File> languageFiles, String targetPackage,
-                                      ClassNameStrategy strategy) throws IOException, MojoExecutionException {
+                                      ClassNameStrategy strategy) throws IOException {
         Map<String, Map<String, String>> propertyTranslations = new HashMap<>();
         Charset charset;
         try {
