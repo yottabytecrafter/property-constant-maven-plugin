@@ -28,6 +28,9 @@ import io.github.yottabytecrafter.strategy.ClassNameStrategy;
 import io.github.yottabytecrafter.factory.ClassNameStrategyFactory;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.List;
 import java.util.Properties;
 
@@ -53,6 +56,9 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
     @Parameter
     private String classNameStrategyClass;
 
+    @Parameter(property = "property-constant.propertiesEncoding", defaultValue = "UTF-8")
+    private String propertiesEncoding = "UTF-8"; // Initialize with default
+
     public void execute() throws MojoExecutionException {
         try {
             ClassNameStrategy strategy = ClassNameStrategyFactory.createStrategy(classNameStrategyClass);
@@ -72,7 +78,7 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
         }
     }
 
-    private void processSource(Source source, ClassNameStrategy strategy) throws IOException {
+    private void processSource(Source source, ClassNameStrategy strategy) throws IOException, MojoExecutionException {
         File sourcePath = new File(source.getPath());
 
         if (!sourcePath.exists()) {
@@ -99,11 +105,28 @@ public class PropertiesGeneratorMojo extends AbstractMojo {
     }
 
     private void processPropertiesFile(File propertiesFile, String targetPackage,
-                                       ClassNameStrategy strategy) throws IOException {
+                                       ClassNameStrategy strategy) throws IOException, MojoExecutionException {
         Properties properties = new Properties();
-        try (FileInputStream fis = new FileInputStream(propertiesFile)) {
-            properties.load(fis);
+        Charset charset;
+        try {
+            charset = Charset.forName(propertiesEncoding);
+        } catch (UnsupportedCharsetException | java.nio.charset.IllegalCharsetNameException e) {
+            getLog().warn("Unsupported or illegal encoding specified: " + propertiesEncoding + ". Using UTF-8 as fallback.", e);
+            charset = StandardCharsets.UTF_8;
+            // Consider re-throwing as MojoExecutionException if this should halt the build
+            // throw new MojoExecutionException("Unsupported or illegal encoding: " + propertiesEncoding, e);
         }
+
+        try (InputStreamReader reader = new InputStreamReader(new FileInputStream(propertiesFile), charset)) {
+            properties.load(reader);
+        } catch (FileNotFoundException e) {
+            getLog().error("Properties file not found: " + propertiesFile.getAbsolutePath(), e);
+            throw e; // Rethrow or handle as appropriate for your plugin's logic
+        } catch (IOException e) {
+            getLog().error("Error reading properties file: " + propertiesFile.getAbsolutePath(), e);
+            throw e; // Rethrow or handle
+        }
+
 
         String pluginVersion = pluginDescriptor == null ? "unknown" : pluginDescriptor.getVersion();
 

@@ -7,9 +7,11 @@ import io.github.yottabytecrafter.utils.ConstantNameConverter;
 import io.github.yottabytecrafter.utils.StringEscapeUtils;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class PropertiesClassGenerator {
@@ -44,12 +46,13 @@ public class PropertiesClassGenerator {
 
         for (String key : properties.stringPropertyNames()) {
             String constantName = ConstantNameConverter.toConstantName(key);
-            String value = StringEscapeUtils.escapeJavaString(properties.getProperty(key));
-            builder.addConstant(constantName, value);
+            String escapedValue = StringEscapeUtils.escapeJavaString(properties.getProperty(key));
+            // Pass the original key, the generated constant name, and the escaped value
+            builder.addConstant(key, constantName, escapedValue);
         }
 
         File outputFile = new File(packageDir, className + ".java");
-        try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
+        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.UTF_8))) {
             writer.print(builder.build());
         }
     }
