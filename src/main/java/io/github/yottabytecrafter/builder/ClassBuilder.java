@@ -32,27 +32,11 @@ public class ClassBuilder {
     }
 
     public ClassBuilder addGenerated(String sourceFile) {
-        this.sourcePropertiesFileName = sourceFile; // Store for class Javadoc
-        code.append("@Generated(\n")
-                .append("    value = \"io.github.yottabytecrafter.PropertiesGeneratorMojo\",\n")
-                .append("    date = \"").append(DateTimeUtils.getCurrentDateTime()).append("\",\n");
-        addVersionToComments(this.sourcePropertiesFileName);
-        code.append(")\n");
+        this.sourcePropertiesFileName = sourceFile;
         return this;
     }
 
-    private void addVersionToComments(String sourceFile) {
-        String javaVersion = System.getProperty("java.version");
-        String javaVendor = System.getProperty("java.vendor");
-
-        if (pluginVersion == null || pluginVersion.isEmpty()) {
-            pluginVersion = "unknown";
-        }
-
-        String comments = String.format("Generated from %s, version: %s, environment: Java %s (%s)",
-                sourceFile, pluginVersion, javaVersion, javaVendor);
-        code.append("    comments = \"").append(comments).append("\"\n");
-    }
+    // addVersionToComments method is removed as its logic is integrated into build()
 
     public ClassBuilder makeClassFinal() {
         code.append("public final class ").append(className).append(" {\n\n");
@@ -122,7 +106,22 @@ public class ClassBuilder {
                   .append(" */\n");
         }
 
-        result.append(code); // Append @Generated, class definition, constants
+        // Add @Generated annotation
+        result.append("@Generated(\n")
+              .append("    value = \"io.github.yottabytecrafter.PropertiesGeneratorMojo\",\n")
+              .append("    date = \"").append(DateTimeUtils.getCurrentDateTime()).append("\"");
+        if (this.sourcePropertiesFileName != null && !this.sourcePropertiesFileName.isEmpty()) {
+            String javaVersion = System.getProperty("java.version");
+            String javaVendor = System.getProperty("java.vendor");
+            String effectivePluginVersion = (this.pluginVersion == null || this.pluginVersion.isEmpty()) ? "unknown" : this.pluginVersion;
+            // Ensure sourcePropertiesFileName is escaped if it can contain special characters for comments
+            String comments = String.format("Generated from %s, version: %s, environment: Java %s (%s)",
+                    this.sourcePropertiesFileName, effectivePluginVersion, javaVersion, javaVendor);
+            result.append(",\n    comments = \"").append(comments).append("\"");
+        }
+        result.append("\n)\n");
+
+        result.append(code); // Append class definition, constants
 
         if (!staticInitializers.isEmpty()) {
             result.append("    static {\n");
