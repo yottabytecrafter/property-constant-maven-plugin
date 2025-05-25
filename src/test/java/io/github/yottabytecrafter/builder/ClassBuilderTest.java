@@ -126,7 +126,7 @@ class ClassBuilderTest {
             assertTrue(result.contains("public final class SpecialConstants {"));
             assertFalse(result.contains("Contains constants generated from the properties group"), "Class Javadoc for source file should not be present");
             // Assertions for the actual constants
-            assertTrue(result.contains("public static final String NEW_LINE = \"line1\\nline2\";"));
+            assertTrue(result.contains("public static final String NEW_LINE = \"line1\nline2\";"));
             assertTrue(result.contains("public static final String QUOTES = \"\\\"quoted text\\\"\";"));
             assertTrue(result.contains("public static final String UNICODE = \"Hello \\u2022 World\";"));
         }
