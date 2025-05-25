@@ -1,6 +1,13 @@
 package io.github.yottabytecrafter.builder;
 
 import io.github.yottabytecrafter.utils.DateTimeUtils;
+import io.github.yottabytecrafter.utils.StringEscapeUtils; // Added for escaping
+
+import java.util.ArrayList; // Added for staticInitializers
+import java.util.HashSet; // Added for imports
+import java.util.List; // Added for staticInitializers
+import java.util.Map; // Added for addLocalizedConstant
+import java.util.Set; // Added for imports
 
 public class ClassBuilder {
 
@@ -9,35 +16,27 @@ public class ClassBuilder {
     private final String packageName;
     private String pluginVersion;
     private String sourcePropertiesFileName; // To store the source file name
+    private final List<String> staticInitializers = new ArrayList<>(); // Added
+    private final Set<String> imports = new HashSet<>(); // Added
 
     public ClassBuilder(String className, String packageName, String pluginVersion) {
         this.className = className;
         this.packageName = packageName;
         this.pluginVersion = pluginVersion;
+        this.imports.add("javax.annotation.Generated"); // Default import
     }
 
-    public ClassBuilder addGenerated(String sourceFile) {
-        this.sourcePropertiesFileName = sourceFile; // Store for class Javadoc
-        code.append("@Generated(\n")
-                .append("    value = \"io.github.yottabytecrafter.PropertiesGeneratorMojo\",\n")
-                .append("    date = \"").append(DateTimeUtils.getCurrentDateTime()).append("\",\n");
-        addVersionToComments(this.sourcePropertiesFileName);
-        code.append(")\n");
+    public ClassBuilder addImport(String fullyQualifiedName) {
+        this.imports.add(fullyQualifiedName);
         return this;
     }
 
-    private void addVersionToComments(String sourceFile) {
-        String javaVersion = System.getProperty("java.version");
-        String javaVendor = System.getProperty("java.vendor");
-
-        if (pluginVersion == null || pluginVersion.isEmpty()) {
-            pluginVersion = "unknown";
-        }
-
-        String comments = String.format("Generated from %s, version: %s, environment: Java %s (%s)",
-                sourceFile, pluginVersion, javaVersion, javaVendor);
-        code.append("    comments = \"").append(comments).append("\"\n");
+    public ClassBuilder addGenerated(String sourceFile) {
+        this.sourcePropertiesFileName = sourceFile;
+        return this;
     }
+
+    // addVersionToComments method is removed as its logic is integrated into build()
 
     public ClassBuilder makeClassFinal() {
         code.append("public final class ").append(className).append(" {\n\n");
@@ -54,25 +53,52 @@ public class ClassBuilder {
     public ClassBuilder addConstant(String originalKey, String constantName, String escapedValue) {
         code.append("    /**\n")
             .append("     * Constant for property key: '").append(originalKey).append("'.\n")
-            // .append("     * Original value: '").append(originalValue).append("'.\n") // Optional: Decided against for now due to potential length and escaping complexity here
             .append("     */\n");
         code.append("    public static final String ")
                 .append(constantName)
                 .append(" = \"")
                 .append(escapedValue)
-                .append("\";\n\n"); // Added an extra newline for spacing between constants
+                .append("\";\n\n");
+        return this;
+    }
+
+    public ClassBuilder addLocalizedConstant(String originalKey, String constantName, Map<String, String> translations) {
+        addImport("java.util.Map");
+        addImport("java.util.HashMap");
+
+        code.append("    /**\n")
+            .append("     * Localized constant for property key: '").append(originalKey).append("'.\n")
+            .append("     * Contains translations for various languages.\n")
+            .append("     */\n");
+        code.append("    public static final java.util.Map<String, String> ").append(constantName).append(";\n\n");
+
+        StringBuilder sbInit = new StringBuilder();
+        sbInit.append("        ").append(constantName).append(" = new java.util.HashMap<>();\n");
+        for (Map.Entry<String, String> langEntry : translations.entrySet()) {
+            sbInit.append("        ").append(constantName).append(".put(\"")
+                  .append(StringEscapeUtils.escapeJavaString(langEntry.getKey()))
+                  .append("\", \"")
+                  .append(StringEscapeUtils.escapeJavaString(langEntry.getValue()))
+                  .append("\");\n");
+        }
+        staticInitializers.add(sbInit.toString());
         return this;
     }
 
     public String build() {
         StringBuilder result = new StringBuilder();
         result.append("package ").append(packageName).append(";\n\n");
-        result.append("import javax.annotation.Generated;\n\n");
+
+        for (String imp : imports) {
+            result.append("import ").append(imp).append(";\n");
+        }
+        result.append("\n");
+
 
         // Add class-level Javadoc
         if (this.sourcePropertiesFileName != null && !this.sourcePropertiesFileName.isEmpty()) {
             result.append("/**\n")
-                  .append(" * Contains constants generated from the properties file: '")
+                  .append(" * Contains constants generated from the properties group: '") // Changed "file" to "group"
                   .append(this.sourcePropertiesFileName).append("'.\n")
                   .append(" * <p>\n")
                   .append(" * This class is automatically generated by the property-constant-maven-plugin.\n")
@@ -80,7 +106,31 @@ public class ClassBuilder {
                   .append(" */\n");
         }
 
-        result.append(code); // Append @Generated, class definition, constants
+        // Add @Generated annotation
+        result.append("@Generated(\n")
+              .append("    value = \"io.github.yottabytecrafter.PropertiesGeneratorMojo\",\n")
+              .append("    date = \"").append(DateTimeUtils.getCurrentDateTime()).append("\"");
+        if (this.sourcePropertiesFileName != null && !this.sourcePropertiesFileName.isEmpty()) {
+            String javaVersion = System.getProperty("java.version");
+            String javaVendor = System.getProperty("java.vendor");
+            String effectivePluginVersion = (this.pluginVersion == null || this.pluginVersion.isEmpty()) ? "unknown" : this.pluginVersion;
+            // Ensure sourcePropertiesFileName is escaped if it can contain special characters for comments
+            String comments = String.format("Generated from %s, version: %s, environment: Java %s (%s)",
+                    this.sourcePropertiesFileName, effectivePluginVersion, javaVersion, javaVendor);
+            result.append(",\n    comments = \"").append(comments).append("\"");
+        }
+        result.append("\n)\n");
+
+        result.append(code); // Append class definition, constants
+
+        if (!staticInitializers.isEmpty()) {
+            result.append("    static {\n");
+            for (String staticInit : staticInitializers) {
+                result.append(staticInit);
+            }
+            result.append("    }\n");
+        }
+
         result.append("}\n");
         return result.toString();
     }

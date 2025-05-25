@@ -12,7 +12,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Properties;
+import java.util.Map; // Added
+// Properties is no longer directly used in the new generateClass signature
 
 public class PropertiesClassGenerator {
 
@@ -34,21 +35,38 @@ public class PropertiesClassGenerator {
         this.pluginVersion = pluginVersion;
     }
 
-    public void generateClass(File propertiesFile, Properties properties) throws IOException {
-        String className = classNameStrategy.generateClassName(propertiesFile.getName());
+    // Old generateClass method removed or commented out if necessary.
+    // For this task, we replace it.
+
+    public void generateClass(String baseName, Map<String, Map<String, String>> propertyTranslations) throws IOException {
+        // Use baseName for class naming. DefaultClassNameStrategy will capitalize it.
+        // If a suffix like ".properties" is needed by a specific strategy, 
+        // the strategy itself should handle it or be configured.
+        String className = classNameStrategy.generateClassName(baseName); 
         File packageDir = new File(outputDirectory, packageName.replace('.', '/'));
-        packageDir.mkdirs();
+        if (!packageDir.exists()) {
+            packageDir.mkdirs();
+        }
 
         ClassBuilder builder = new ClassBuilder(className, packageName, pluginVersion)
-                .addGenerated(propertiesFile.getName())
+                // Indicate that the class is generated from a group of property files
+                .addGenerated(baseName + "_*.properties") 
                 .makeClassFinal()
                 .addPrivateConstructor();
+        
+        // Add imports for Map and HashMap, ClassBuilder will handle duplicates.
+        // These are added by addLocalizedConstant now, but good to be aware.
+        // builder.addImport("java.util.Map");
+        // builder.addImport("java.util.HashMap");
 
-        for (String key : properties.stringPropertyNames()) {
-            String constantName = ConstantNameConverter.toConstantName(key);
-            String escapedValue = StringEscapeUtils.escapeJavaString(properties.getProperty(key));
-            // Pass the original key, the generated constant name, and the escaped value
-            builder.addConstant(key, constantName, escapedValue);
+
+        for (Map.Entry<String, Map<String, String>> entry : propertyTranslations.entrySet()) {
+            String originalKey = entry.getKey();
+            Map<String, String> translations = entry.getValue();
+            String constantName = ConstantNameConverter.toConstantName(originalKey);
+            
+            // Call the new method in ClassBuilder to add a Map field and its static initialization
+            builder.addLocalizedConstant(originalKey, constantName, translations);
         }
 
         File outputFile = new File(packageDir, className + ".java");
