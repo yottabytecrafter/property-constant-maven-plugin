@@ -10,7 +10,8 @@ public class ClassNameStrategyFactory {
         }
 
         try {
-            Class<?> clazz = Class.forName(strategyClass);
+            // Use Thread Context ClassLoader to load the strategy class
+            Class<?> clazz = Class.forName(strategyClass, true, Thread.currentThread().getContextClassLoader());
             if (!ClassNameStrategy.class.isAssignableFrom(clazz)) {
                 throw new IllegalArgumentException("Class " + strategyClass + " does not implement ClassNameStrategy");
             }

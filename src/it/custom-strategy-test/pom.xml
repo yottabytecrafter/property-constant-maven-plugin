@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example.it</groupId>
+    <artifactId>custom-strategy-it</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Custom Strategy IT</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source> <!-- Keep it simple for ITs -->
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <!-- Dependency on the interface, scope provided if it's usually part of the plugin -->
+        <dependency>
+            <groupId>io.github.yottabytecrafter</groupId>
+            <artifactId>property-constant-maven-plugin</artifactId>
+            <version>@project.version@</version> <!-- This will be replaced by invoker -->
+            <scope>provided</scope> <!-- The interface is needed for compilation -->
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.github.yottabytecrafter</groupId>
+                <artifactId>property-constant-maven-plugin</artifactId>
+                <version>@project.version@</version> <!-- This will be replaced by invoker -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-properties</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>
+                                    <path>src/main/resources/it-props</path>
+                                    <targetPackage>com.example.it.generated</targetPackage>
+                                </source>
+                            </sources>
+                            <classNameStrategyClass>com.example.it.CustomStrategy</classNameStrategyClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
