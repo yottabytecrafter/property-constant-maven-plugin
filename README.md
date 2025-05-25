@@ -76,8 +76,76 @@ To use the Property Constant Maven Plugin, add it to your project's `pom.xml` in
 | `targetPackage`          | The default target package for generated classes if not specified in `source`.                                   |                                                                |
 | `outputDirectory`        | The output directory for the generated Java classes.                                                              | `${project.build.directory}/generated-sources/java`            |
 | `propertiesEncoding`     | The character encoding to use when reading the .properties files.                                                 | `UTF-8`                                                        |
-| `classNameStrategyClass` | Optional: Fully qualified class name of a custom `ClassNameStrategy` implementation.                             | `io.github.yottabytecrafter.strategy.DefaultClassNameStrategy` |
+| `classNameStrategyClass` | Optional: Fully qualified class name of a custom `ClassNameStrategy` implementation. This allows you to define your own logic for how Java class names are generated from property file names.                             | `io.github.yottabytecrafter.strategy.DefaultClassNameStrategy` |
 
+
+### Custom Class Name Strategy
+
+Users can provide their own logic for generating class names from property file names by implementing the `io.github.yottabytecrafter.strategy.ClassNameStrategy` interface.
+
+**1. Create your custom strategy implementation:**
+
+```java
+package com.example.myproject;
+
+import io.github.yottabytecrafter.strategy.ClassNameStrategy;
+// No need to import java.io.File for this specific example,
+// but it might be needed for more complex strategies.
+
+public class MyCustomStrategy implements ClassNameStrategy {
+    @Override
+    public String generateClassName(String propertiesFileName) {
+        // Example: Remove ".properties" and prepend "Config_"
+        String baseName = propertiesFileName.endsWith(".properties") ?
+                          propertiesFileName.substring(0, propertiesFileName.length() - ".properties".length()) :
+                          propertiesFileName;
+        // Basic sanitization to ensure valid Java class name characters
+        String sanitizedBaseName = baseName.replaceAll("[^a-zA-Z0-9_]", "");
+        if (sanitizedBaseName.isEmpty()) {
+            // Fallback for names that become empty after sanitization
+            return "Config_Default"; 
+        }
+        // Ensure it starts with a letter or underscore if it's not already
+        if (Character.isDigit(sanitizedBaseName.charAt(0))) {
+            sanitizedBaseName = "_" + sanitizedBaseName;
+        }
+        return "Config_" + sanitizedBaseName;
+    }
+}
+```
+
+**2. Configure the plugin in your `pom.xml`:**
+
+```xml
+<plugin>
+    <groupId>io.github.yottabytecrafter</groupId>
+    <artifactId>property-constant-maven-plugin</artifactId>
+    <version>YOUR_PLUGIN_VERSION</version> <!-- Replace with the actual plugin version -->
+    <executions>
+        <execution>
+            <goals>
+                <goal>generate-properties</goal>
+            </goals>
+            <configuration>
+                <sources>
+                    <source>
+                        <path>src/main/resources/myconfig.properties</path>
+                        <targetPackage>com.example.myproject.generated</targetPackage>
+                    </source>
+                </sources>
+                <classNameStrategyClass>com.example.myproject.MyCustomStrategy</classNameStrategyClass>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+**Important Note on Classpath:**
+The custom strategy class (e.g., `com.example.myproject.MyCustomStrategy`) must be compiled and available on the classpath when the plugin executes (typically during the `generate-sources` phase).
+*   If your custom strategy is in the same Maven module where you are using the plugin: Maven's default lifecycle compiles `src/main/java` during the `compile` phase, which is *after* `generate-sources`. Thus, the custom strategy class will not be found. To address this, you would need to compile the custom strategy class before the `generate-sources` phase. This can be achieved by:
+    *   Placing the custom strategy in a separate utility module that your current project depends on. This is the recommended approach as it clearly separates concerns.
+    *   Customizing your build lifecycle to compile these specific classes earlier (this is a more advanced Maven customization).
+*   The plugin uses the Thread Context ClassLoader to load the custom strategy, which helps if the class is available on the project's classpath at the time of execution.
 
 ## Example
 
