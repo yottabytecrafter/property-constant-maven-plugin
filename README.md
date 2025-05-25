@@ -19,7 +19,8 @@ The plugin scans specified directories for `.properties` files during the build 
 *   **Compile-Time Safety:** Ensures that property keys are valid identifiers at compile time.
 *   **Robust Constant Naming:** Converts property keys into Java-compliant constant names, including handling for leading digits (by prefixing with an underscore) and sanitizing invalid characters.
 *   **UTF-8 Support for Properties Files:** Properly reads property files using a specified encoding (defaults to UTF-8) via the `propertiesEncoding` parameter, ensuring correct handling of non-ASCII characters.
-*   **Generated Javadoc:** Automatically generates class-level Javadoc (including the source properties file name) and constant-level Javadoc (including the original property key) for better usability and documentation.
+*   **Generated Javadoc:** Automatically generates class-level Javadoc (including the source properties file name or base name for i18n groups) and constant-level Javadoc (including the original property key) for better usability and documentation.
+*   **Multi-language Support (i18n):** Generates Java classes with `Map<String, String>` constants for localized properties, allowing easy access to translations based on language codes.
 *   **Integration Tests:** Includes comprehensive integration tests to ensure reliability.
 *   **Maven Integration:** Seamlessly integrates with the Maven build lifecycle.
 
@@ -46,17 +47,24 @@ To use the Property Constant Maven Plugin, add it to your project's `pom.xml` in
             <configuration>
                 <sources>
                     <source>
-                        <!-- Path to *.properties File -->
-                        <path>${project.basedir}/src/main/resources/message.properties</path>
-                        <targetPackage>io.github.yottabytecrafter.config</targetPackage>
+                        <!-- Path to a single *.properties File (legacy mode) -->
+                        <!-- <path>${project.basedir}/src/main/resources/config.properties</path> -->
+                        <!-- <targetPackage>com.example.legacyconfig</targetPackage> -->
                     </source>
                     <source>
-                        <!-- Path to directory with *.properties Files -->
-                        <path>${project.basedir}/src/main/resources</path>
-                        <targetPackage>io.github.yottabytecrafter.config</targetPackage>
+                        <!-- Path to a directory with *.properties Files (for non-i18n properties) -->
+                        <!-- <path>${project.basedir}/src/main/resources/settings</path> -->
+                        <!-- <targetPackage>com.example.settings</targetPackage> -->
+                    </source>
+                    <source>
+                        <!-- Path to a directory for localized properties (i18n) -->
+                        <!-- e.g., src/main/resources/i18n might contain: -->
+                        <!-- messages_en.properties, messages_de.properties, labels_en_US.properties, etc. -->
+                        <path>${project.basedir}/src/main/resources/i18n</path>
+                        <targetPackage>com.example.i18n</targetPackage>
                     </source>
                 </sources>
-                <!-- Optional output directory -->
+                <!-- Optional: output directory for generated Java classes -->
                 <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
                 <!-- Optional: Specify encoding for reading .properties files -->
                 <propertiesEncoding>UTF-8</propertiesEncoding> <!-- Default is UTF-8 -->
@@ -70,14 +78,44 @@ To use the Property Constant Maven Plugin, add it to your project's `pom.xml` in
 
 | Parameter                | Description                                                                                                       | Default Value                                                  |
 | :----------------------- | :---------------------------------------------------------------------------------------------------------------- |:---------------------------------------------------------------|
-| `sources`                | A list of source configurations, each defining a path and optionally a target package.                           |                                                                |
-| `source`                 | Specifies the path to the directory or property file.                                                             |                                                                |
-| `path`                   | The path to the directory or property file.                                                                      |                                                                |
-| `targetPackage`          | The default target package for generated classes if not specified in `source`.                                   |                                                                |
-| `outputDirectory`        | The output directory for the generated Java classes.                                                              | `${project.build.directory}/generated-sources/java`            |
-| `propertiesEncoding`     | The character encoding to use when reading the .properties files.                                                 | `UTF-8`                                                        |
-| `classNameStrategyClass` | Optional: Fully qualified class name of a custom `ClassNameStrategy` implementation. This allows you to define your own logic for how Java class names are generated from property file names.                             | `io.github.yottabytecrafter.strategy.DefaultClassNameStrategy` |
+| `sources`                | A list of source configurations. Each `<source>` element defines a set of properties to process.                 | (Required)                                                     |
+| `source`/`path`          | The path to a directory containing property files or to a single property file. **For multi-language support, this should be a directory.** | (Required within `source`)                                     |
+| `source`/`targetPackage` | The Java package for the generated class(es) from this source.                                                   | (Required within `source`)                                     |
+| `outputDirectory`        | The root directory where generated Java classes will be written.                                                  | `${project.build.directory}/generated-sources/java`            |
+| `propertiesEncoding`     | The character encoding used to read the `.properties` files.                                                      | `UTF-8`                                                        |
+| `classNameStrategyClass` | Optional: Fully qualified class name of a custom `ClassNameStrategy` implementation. This allows you to define your own logic for how Java class names are generated from property file names (or base names for i18n). | `io.github.yottabytecrafter.strategy.DefaultClassNameStrategy` |
 
+### Property File Naming Convention for Multi-language Support
+
+To leverage the multi-language support, your property files must follow a specific naming convention:
+
+`basename_language.properties`
+
+*   **`basename`**: This is the base name for a group of related translation files. It's used to group them together and typically determines the generated Java class name (e.g., `messages` could become `MessagesProperties.java`).
+*   **`language`**: This is the language code. It generally follows:
+    *   ISO 639-1 two-letter codes (e.g., `en` for English, `de` for German, `fr` for French).
+    *   Or, it can include a region/country variant (e.g., `en_US` for English - United States, `fr_CA` for French - Canada, `pt_BR` for Portuguese - Brazil). The plugin extracts this full string as the language key.
+*   **`.properties`**: The standard properties file extension.
+
+**Example Directory Structure (`src/main/resources/i18n/`):**
+
+```
+src/
+└── main/
+    └── resources/
+        └── i18n/
+            ├── messages_en.properties
+            ├── messages_de.properties
+            ├── messages_fr_CA.properties
+            ├── labels_en.properties
+            └── labels_es.properties
+```
+
+In this example:
+*   `messages_en.properties`, `messages_de.properties`, `messages_fr_CA.properties` form a group with `basename` "messages". This will likely generate a `MessagesProperties.java` (depending on the class name strategy).
+*   `labels_en.properties`, `labels_es.properties` form another group with `basename` "labels", likely generating `LabelsProperties.java`.
+
+If the `<path>` in a `<source>` configuration points to a single file (e.g., `config.properties`), the plugin will process it in a legacy, non-i18n mode, generating simple string constants. If the path points to a directory, it will attempt to find files matching the `basename_language.properties` pattern for i18n processing.
 
 ### Custom Class Name Strategy
 
@@ -94,22 +132,25 @@ import io.github.yottabytecrafter.strategy.ClassNameStrategy;
 
 public class MyCustomStrategy implements ClassNameStrategy {
     @Override
-    public String generateClassName(String propertiesFileName) {
-        // Example: Remove ".properties" and prepend "Config_"
-        String baseName = propertiesFileName.endsWith(".properties") ?
-                          propertiesFileName.substring(0, propertiesFileName.length() - ".properties".length()) :
-                          propertiesFileName;
-        // Basic sanitization to ensure valid Java class name characters
-        String sanitizedBaseName = baseName.replaceAll("[^a-zA-Z0-9_]", "");
+    public String generateClassName(String name) {
+        // 'name' will be the basename (e.g., "messages" from "messages_en.properties")
+        // when processing i18n property groups.
+        // If processing a single, non-i18n file, 'name' will be the full file name (e.g., "config.properties").
+        
+        String baseNameForClass = name;
+        if (name.endsWith(".properties")) { // Handle legacy single file case
+            baseNameForClass = name.substring(0, name.length() - ".properties".length());
+        }
+        
+        // Example: Capitalize the first letter and append "Bundle"
+        String sanitizedBaseName = baseNameForClass.replaceAll("[^a-zA-Z0-9_]", "");
         if (sanitizedBaseName.isEmpty()) {
-            // Fallback for names that become empty after sanitization
-            return "Config_Default"; 
+            return "DefaultBundle"; 
         }
-        // Ensure it starts with a letter or underscore if it's not already
-        if (Character.isDigit(sanitizedBaseName.charAt(0))) {
-            sanitizedBaseName = "_" + sanitizedBaseName;
-        }
-        return "Config_" + sanitizedBaseName;
+        // Capitalize first letter
+        sanitizedBaseName = Character.toUpperCase(sanitizedBaseName.charAt(0)) + sanitizedBaseName.substring(1);
+        
+        return sanitizedBaseName + "Bundle"; // e.g., "messages" -> "MessagesBundle"
     }
 }
 ```
@@ -174,7 +215,7 @@ import javax.annotation.Generated;
     date = "YYYY-MM-DDTHH:mm:ssZ", // Example date
     comments = "Generated from message.properties, version: 0.1, environment: Java X.Y.Z (Vendor)" // Example comment
 )
-public final class MessageProperties {
+public final class MessageProperties { // Assuming DefaultClassNameStrategy for a single file "message.properties"
 
     private MessageProperties() {
         // Prevent instantiation
@@ -192,7 +233,99 @@ public final class MessageProperties {
 
 }
 ```
+
+### Generated Class for Localized Properties
+
+When processing property files that follow the `basename_language.properties` convention (e.g., `messages_en.properties`, `messages_de.properties` found in a directory specified in `<path>`), the plugin generates a Java class where each property key is represented as a `public static final java.util.Map<String, String>`.
+
+*   The map's key is the language code string (e.g., "en", "de", "fr-CA").
+*   The map's value is the translated string for that language.
+
+**Example:**
+
+Given property files:
+*   `src/main/resources/i18n/apptexts_en.properties`:
+    ```properties
+    app.title=My Application
+    button.save=Save
+    ```
+*   `src/main/resources/i18n/apptexts_de.properties`:
+    ```properties
+    app.title=Meine Anwendung
+    button.save=Speichern
+    ```
+
+And the following configuration:
+```xml
+<source>
+    <path>src/main/resources/i18n</path>
+    <targetPackage>com.example.i18n</targetPackage>
+</source>
+```
+
+The plugin (using `DefaultClassNameStrategy`) would generate `com.example.i18n.ApptextsProperties.java` (basename "apptexts" -> "ApptextsProperties"):
+
+```java
+package com.example.i18n;
+
+import javax.annotation.Generated;
+import java.util.Map;
+import java.util.HashMap;
+
+/**
+ * Contains constants generated from the properties group: 'apptexts_*.properties'.
+ * <p>
+ * This class is automatically generated by the property-constant-maven-plugin.
+ * Do not modify this file directly.
+ */
+@Generated(
+    value = "io.github.yottabytecrafter.PropertiesGeneratorMojo",
+    date = "YYYY-MM-DDTHH:mm:ssZ", // Example date
+    comments = "Generated from apptexts_*.properties, version: 0.1, environment: Java X.Y.Z (Vendor)" // Example comment
+)
+public final class ApptextsProperties {
+
+    private ApptextsProperties() {
+        // Prevent instantiation
+    }
+
+    /**
+     * Localized constant for property key: 'app.title'.
+     * Contains translations for various languages.
+     */
+    public static final java.util.Map<String, String> APP_TITLE;
+
+    /**
+     * Localized constant for property key: 'button.save'.
+     * Contains translations for various languages.
+     */
+    public static final java.util.Map<String, String> BUTTON_SAVE;
+
+    static {
+        APP_TITLE = new java.util.HashMap<>();
+        APP_TITLE.put("en", "My Application");
+        APP_TITLE.put("de", "Meine Anwendung");
+
+        BUTTON_SAVE = new java.util.HashMap<>();
+        BUTTON_SAVE.put("en", "Save");
+        BUTTON_SAVE.put("de", "Speichern");
+    }
+}
+```
 *(Note: The `@Generated` annotation will contain the actual generation timestamp, plugin version, and Java environment details.)*
+
+**Usage in your code:**
+
+```java
+// Assuming ApptextsProperties is imported
+String titleInEnglish = ApptextsProperties.APP_TITLE.get("en");
+String titleInGerman = ApptextsProperties.APP_TITLE.get("de");
+
+// For a button label
+String saveButtonEnglish = ApptextsProperties.BUTTON_SAVE.get("en");
+```
+
+This structure provides a type-safe way to access all translations of a given property key.
 
 ## Contributing
 
