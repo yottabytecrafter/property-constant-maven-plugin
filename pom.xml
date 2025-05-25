@@ -6,7 +6,7 @@
 
     <groupId>io.github.yottabytecrafter</groupId>
     <artifactId>property-constant-maven-plugin</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <packaging>maven-plugin</packaging>
     <url>https://github.com/yottabytecrafter/property-constant-maven-plugin/</url>
 
