@@ -32,10 +32,16 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
+import java.util.ArrayList; // For computeIfAbsent in filesByBaseName
+import java.util.HashMap;   // For filesByBaseName and propertyTranslations
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;     // For filesByBaseName and propertyTranslations
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher; // For pattern matching file names
+import java.util.regex.Pattern;   // For compiling regex for file names
+import java.util.stream.Collectors; // For collecting file names for logging
 
 /**
  * Maven plugin to generate Java constant classes from property files.
